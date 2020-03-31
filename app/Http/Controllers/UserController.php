@@ -95,7 +95,7 @@ class UserController extends Controller
             'firstname'       => 'required|string|max:255',
             'lastname'        => 'required|string|max:255',
 			'email'           => 'required|string|email|max:255|unique:users',
-            'password'        => 'required|string|min:5',
+            'password'        => 'required_with:password_verify|same:password_verify|string|min:5',
             'password_verify' => 'required|string|min:5',
         
 		]);
