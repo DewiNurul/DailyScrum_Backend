@@ -14,7 +14,11 @@ Route::get('login/check', "UserController@LoginCheck"); //cek token
 Route::get('user/index', "UserController@index"); //read semua user
 Route::get('user/{limit}/{offset}', "UserController@getAll"); //read dengan limit user
 
-
+//daily_scrum
+Route::get('daily_scrum', "DailyScrumController@index"); //read daily_scrum
+Route::get('daily_scrum/{limit}/{offset}', "DailyScrumController@getAll"); //read daily_scrum
+Route::post('daily_scrum', 'DailyScrumController@store'); //create daily_scrum
+Route::delete('daily_scrum/{id}', "DailyScrumController@delete"); //delete daily_scrum
 });
 
 
