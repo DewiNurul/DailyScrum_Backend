@@ -1,8 +1,8 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use Illuminate\Http\Request;
+use Auth;
 use App\User;
 use App\DailyScrum;
 use DB;
@@ -17,7 +17,9 @@ class DailyScrumController extends Controller
 	        $data["count"] = DailyScrum::count();
           $daily_scrum = array();
           $dataDailyScrum = DB::table('daily_scrum')->join('users','users.id','=','daily_scrum.id_users')
-          ->select('daily_scrum.id', 'users.firstname','users.lastname','users.email','daily_scrum.id_users','daily_scrum.team', 'daily_scrum.activity_yesterday', 'daily_scrum.activity_today','daily_scrum.problem_yesterday','daily_scrum.solution')
+          ->select('daily_scrum.id', 'users.firstname','users.lastname','users.email','daily_scrum.id_users',
+          'daily_scrum.team', 'daily_scrum.activity_yesterday', 'daily_scrum.activity_today','daily_scrum.problem_yesterday',
+          'daily_scrum.solution','daily_scrum.created_at')
           ->get();
           
 
@@ -33,6 +35,8 @@ class DailyScrumController extends Controller
                     "activity_today"    	  => $p->activity_today,
                     "problem_yesterday"    	=> $p->problem_yesterday,
                     "solution"    	  		  => $p->solution,
+                    "created_at"             =>$p->created_at,
+                    "tanggal"               => date('D, j  F Y', strtotime($p->created_at)),
 	            ];
 
 	            array_push($daily_scrum, $item);
@@ -50,26 +54,32 @@ class DailyScrumController extends Controller
     }
 
   
-    public function getAll($limit = 10, $offset = 0)
+    public function getAll($limit = 10, $offset = 0, $id_users)
     {
     	try{
 	        $data["count"] = DailyScrum::count();
           $daily_scrum = array();
           $dataDailyScrum = DB::table('daily_scrum')->join('users','users.id','=','daily_scrum.id_users')
-          ->select('daily_scrum.id','daily_scrum.team', 'daily_scrum.activity_yesterday', 'daily_scrum.activity_today','daily_scrum.problem_yesterday','daily_scrum.solution')
+          ->select('daily_scrum.id','daily_scrum.id_users','daily_scrum.team', 'daily_scrum.activity_yesterday', 
+          'daily_scrum.activity_today','daily_scrum.problem_yesterday',
+          'daily_scrum.solution','daily_scrum.created_at')
           ->skip($offset)
           ->take($limit)
-          // ->where('daily_scrum.id_users', $id_user)
+          ->where('daily_scrum.id_users', $id_users)
           ->get();
 
 	        foreach ($dataDailyScrum as $p) {
 	            $item = [
                     "id"          		      => $p->id,
+                    "id_users"              => $p->id_users,
                     "team"                  => $p->team,
 	                  "activity_yesterday"  	=> $p->activity_yesterday,
                     "activity_today"      	=> $p->activity_today,
                     "problem_yesterday"    	=> $p->problem_yesterday,
                     "solution"    	  		  => $p->solution,
+                    "created_at"             =>$p->created_at,
+                    "tanggal"               => date('l, d F Y', strtotime($p->created_at)),
+                     
 	            ];
 
 	            array_push($daily_scrum, $item);
@@ -91,7 +101,6 @@ class DailyScrumController extends Controller
     {
         try{
     		$validator = Validator::make($request->all(), [
-          // 'id_users'                    => 'required',
     			'team'                        => 'required|string|max:255',
 				  'activity_yesterday'			  	=> 'required|string|max:255',
           'activity_today'			  		  => 'required|string|max:500',
@@ -106,19 +115,10 @@ class DailyScrumController extends Controller
     			]);
     		}
 
-          // $data = new DailyScrum();
-          // $data->id_users              = $request->input('id_users');
-	        // $data->team                  = $request->input('team');
-	        // $data->activity_yesterday    = $request->input('activity_yesterday');
-          // $data->activity_today        = $request->input('activity_today');
-          // $data->problem_yesterday     = $request->input('problem_yesterday');
-          // $data->solution              = $request->input('solution');
-	        // $data->save();
-
     		//cek apakah ada id user tersebut
-    		if(User::where('id', $request->input('id_users'))->count() > 0){
+    		// if(User::where('id', $request->input('id_users'))->count() > 0){
     				  $data = new DailyScrum();
-				    	$data->id_users             = $request->input('id_users');
+				    	$data->id_users             = Auth::user()->id;
 			        $data->team                 = $request->input('team');
 			        $data->activity_yesterday   = $request->input('activity_yesterday');
               $data->activity_today       = $request->input('activity_today');
@@ -131,12 +131,7 @@ class DailyScrumController extends Controller
 		    			'status'	=> '1',
 		    			'message'	=> 'Data daily scrum berhasil ditambahkan!'
 		    		], 201);
-    		  	} else {
-    				return response()->json([
-		                'status' => '0',
-		                'message' => 'Data daily scrum tidak ditemukan.'
-		            ]);
-    		   	}
+    		  	
 
       } catch(\Exception $e){
             return response()->json([

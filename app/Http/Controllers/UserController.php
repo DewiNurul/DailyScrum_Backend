@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\User;
+use Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -95,7 +96,7 @@ class UserController extends Controller
             'firstname'       => 'required|string|max:255',
             'lastname'        => 'required|string|max:255',
 			'email'           => 'required|string|email|max:255|unique:users',
-            'password'        => 'required_with:password_verify|same:password_verify|string|min:5',
+            'password'        => 'required|same:password_verify|string|min:5',
             'password_verify' => 'required|string|min:5',
         
 		]);
